@@ -6,7 +6,7 @@
 
 #include <benchmark/benchmark.h>
 
-static const int minimumSize = 1 << 14;
+static const int minimumSize = 1 << 10;
 static const int maximumSize = 1 << 24;
 
 struct Point {
@@ -29,14 +29,22 @@ struct Point {
     }
     return z < rhs.z;
   }
+
+  bool operator==(const Point &rhs) const {
+    return x == rhs.x && y == rhs.y && z == rhs.z;
+  }
+
+  bool operator!=(const Point &rhs) const { return !(rhs == *this); }
 };
 
 static void sortReversed(benchmark::State &state) {
   const auto size = static_cast<size_t>(state.range(0));
   for (auto _ : state) {
-    std::vector<int> v(size);
+    std::vector<Point> v(size);
     for (std::size_t i = 0; i < size; i++) {
-      v[i] = rand();
+      v[i].x = rand();
+      v[i].y = rand();
+      v[i].z = rand();
     }
     std::sort(std::rbegin(v), std::rend(v));
   }
@@ -46,9 +54,11 @@ BENCHMARK(sortReversed)->RangeMultiplier(2)->Range(minimumSize, maximumSize);
 static void sortThenReverse(benchmark::State &state) {
   const auto size = static_cast<size_t>(state.range(0));
   for (auto _ : state) {
-    std::vector<int> v(size);
+    std::vector<Point> v(size);
     for (std::size_t i = 0; i < size; i++) {
-      v[i] = rand();
+      v[i].x = rand();
+      v[i].y = rand();
+      v[i].z = rand();
     }
     std::sort(std::begin(v), std::end(v));
     std::reverse(std::begin(v), std::end(v));
@@ -59,9 +69,11 @@ BENCHMARK(sortThenReverse)->RangeMultiplier(2)->Range(minimumSize, maximumSize);
 static void sortWithGeneratedComparator(benchmark::State &state) {
   const auto size = static_cast<size_t>(state.range(0));
   for (auto _ : state) {
-    std::vector<int> v(size);
+    std::vector<Point> v(size);
     for (std::size_t i = 0; i < size; i++) {
-      v[i] = rand();
+      v[i].x = rand();
+      v[i].y = rand();
+      v[i].z = rand();
     }
     std::sort(std::begin(v), std::end(v), [](const auto &lhs, const auto &rhs) {
       return rhs < lhs && lhs != rhs;
